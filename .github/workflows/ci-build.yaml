@@ -38,3 +38,23 @@ jobs:
         run: flake8 service tests run_tests.py
       - name: Run nosetests and check 95 percent coverage
         run: python run_tests.py -v
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t accounts:1 .
+      - name: Inspect image and smoke test
+        run: |
+          docker images accounts --no-trunc
+          docker run -d --name accounts-demo -p 8080:8080 -e DATABASE_URI=sqlite:///:memory: accounts:1
+          for attempt in $(seq 1 30); do
+            if curl --fail http://localhost:8080/health; then break; fi
+            sleep 1
+          done
+          curl --fail --include http://localhost:8080/
+          docker logs accounts-demo
+      - name: Clean up demo container
+        if: always()
+        run: docker rm -f accounts-demo || true
