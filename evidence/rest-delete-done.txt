@@ -1,0 +1,13 @@
+curl -i -X DELETE http://localhost:8080/accounts/1
+HTTP/1.1 204 NO CONTENT
+Server: Werkzeug/2.2.3 Python/3.11.0
+Date: Mon, 09 Nov 2026 20:59:14 GMT
+Content-Type: text/html; charset=utf-8
+Access-Control-Allow-Origin: *
+Permissions-Policy: browsing-topics=()
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'self'; object-src 'none'
+Referrer-Policy: strict-origin-when-cross-origin
+Connection: close
+

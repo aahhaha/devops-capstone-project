@@ -1,0 +1,16 @@
+curl -i -X PUT http://localhost:8080/accounts/1 -H 'Content-Type: application/json' --data-binary @update-account.json
+{"name":"Updated Customer","address":"456 Test Street","phone_number":"555-0100","email":"updated@example.com","date_joined":"2026-11-10"}
+HTTP/1.1 200 OK
+Server: Werkzeug/2.2.3 Python/3.11.0
+Date: Mon, 09 Nov 2026 20:59:14 GMT
+Content-Type: application/json
+Content-Length: 146
+Access-Control-Allow-Origin: *
+Permissions-Policy: browsing-topics=()
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'self'; object-src 'none'
+Referrer-Policy: strict-origin-when-cross-origin
+Connection: close
+
+{"address":"456 Test Street","date_joined":"2026-11-10","email":"updated@example.com","id":1,"name":"Updated Customer","phone_number":"555-0100"}

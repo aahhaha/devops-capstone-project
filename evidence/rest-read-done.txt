@@ -1,0 +1,15 @@
+curl -i http://localhost:8080/accounts/1
+HTTP/1.1 200 OK
+Server: Werkzeug/2.2.3 Python/3.11.0
+Date: Mon, 09 Nov 2026 20:59:14 GMT
+Content-Type: application/json
+Content-Length: 140
+Access-Control-Allow-Origin: *
+Permissions-Policy: browsing-topics=()
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'self'; object-src 'none'
+Referrer-Policy: strict-origin-when-cross-origin
+Connection: close
+
+{"address":"123 Test Street","date_joined":"2026-11-10","email":"demo@example.com","id":1,"name":"Demo Customer","phone_number":"555-0100"}
