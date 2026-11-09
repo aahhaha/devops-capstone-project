@@ -1,3 +1,27 @@
+# devops-capstone-project
+
+[![CI Build](https://github.com/aahhaha/devops-capstone-project/actions/workflows/ci-build.yaml/badge.svg)](https://github.com/aahhaha/devops-capstone-project/actions/workflows/ci-build.yaml)
+
+Customer Accounts microservice with Flask, PostgreSQL, CRUD REST APIs, security headers, CORS, automated tests, and a GitHub Actions CI workflow. Based on IBM's Apache-2.0 licensed capstone template.
+
+## Run and test
+
+Use Python 3.11 and install `requirements.txt`. Set `DATABASE_URI` to a PostgreSQL connection URL. For local demonstration or tests, `sqlite:///:memory:` is also supported.
+
+```sh
+python -m pip install -r requirements.txt
+flake8 service tests run_tests.py
+python run_tests.py -v
+flask --app service run --host 127.0.0.1 --port 8080
+```
+
+`run_tests.py` executes Nose with a compatibility shim for Python 3.11. The suite checks at least 95 percent service coverage.
+
+Endpoints: `GET /`, `GET /health`, `POST /accounts`, `GET /accounts`, `GET /accounts/<id>`, `PUT /accounts/<id>`, and `DELETE /accounts/<id>`. GET collection supports `?name=`.
+
+The `Dockerfile` runs the service on port 8080 as a non-root user. Kubernetes manifests in `deploy/` expect a database secret named `accounts-database` with a `uri` key. Replace the deployment image with the built image before applying.
+
+## Original template documentation
 # DevOps Capstone Template
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -131,3 +155,4 @@ You can now perform Tekton development locally, just like in the Cloud IDE lab e
 Licensed under the Apache License. See [LICENSE](LICENSE)
 
 ## <h3 align="center"> © IBM Corporation 2022. All rights reserved. <h3/>
+

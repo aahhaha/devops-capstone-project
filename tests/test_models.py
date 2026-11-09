@@ -175,3 +175,13 @@ class TestAccount(unittest.TestCase):
         """It should not Deserialize an account with a TypeError"""
         account = Account()
         self.assertRaises(DataValidationError, account.deserialize, [])
+
+    def test_default_date(self):
+        """An omitted join date defaults to today, and malformed dates fail."""
+        from datetime import date
+        data = {"name": "Demo", "email": "demo@example.com", "address": "Test address"}
+        account = Account().deserialize(data)
+        self.assertEqual(account.date_joined, date.today())
+        self.assertIn("Demo", repr(account))
+        data["date_joined"] = "not-a-date"
+        self.assertRaises(DataValidationError, account.deserialize, data)

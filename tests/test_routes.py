@@ -123,4 +123,85 @@ class TestAccountService(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-    # ADD YOUR TEST CASES HERE ...
+    def test_read_account(self):
+        """Read a created account using its Location header."""
+        account = self._create_accounts(1)[0]
+        response = self.client.get(f"{BASE_URL}/{account.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), account.serialize())
+
+    def test_read_missing_account(self):
+        """An unknown ID returns 404."""
+        self.assertEqual(self.client.get(f"{BASE_URL}/0").status_code, 404)
+
+    def test_list_accounts(self):
+        """List all persisted accounts and support an empty collection."""
+        self.assertEqual(self.client.get(BASE_URL).get_json(), [])
+        self._create_accounts(3)
+        self.assertEqual(len(self.client.get(BASE_URL).get_json()), 3)
+
+    def test_filter_accounts(self):
+        """Filter accounts by an exact customer name."""
+        account = self._create_accounts(2)[0]
+        response = self.client.get(BASE_URL, query_string={"name": account.name})
+        self.assertEqual(response.get_json(), [account.serialize()])
+
+    def test_update_account(self):
+        """Update data without changing identity and verify persistence."""
+        account = self._create_accounts(1)[0]
+        data = account.serialize()
+        data["email"] = "updated@example.com"
+        response = self.client.put(f"{BASE_URL}/{account.id}", json=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["id"], account.id)
+        result = self.client.get(f"{BASE_URL}/{account.id}").get_json()
+        self.assertEqual(result["email"], data["email"])
+
+    def test_update_missing_account(self):
+        """Updating an unknown account must not create a new record."""
+        response = self.client.put(f"{BASE_URL}/0", json={})
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_invalid_account(self):
+        """Reject malformed updates and unsupported content types."""
+        account = self._create_accounts(1)[0]
+        url = f"{BASE_URL}/{account.id}"
+        self.assertEqual(self.client.put(url, json={}).status_code, 400)
+        self.assertEqual(self.client.put(url, data="bad").status_code, 415)
+
+    def test_delete_account(self):
+        """Deleting is idempotent and removes the stored account."""
+        account = self._create_accounts(1)[0]
+        url = f"{BASE_URL}/{account.id}"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.data, b"")
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(self.client.delete(url).status_code, 204)
+
+    def test_security_headers(self):
+        """Talisman protects responses and CORS supports API clients."""
+        response = self.client.get("/health", headers={"Origin": "https://example.com"})
+        self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(response.headers["X-Frame-Options"], "SAMEORIGIN")
+        self.assertIn("default-src", response.headers["Content-Security-Policy"])
+        self.assertEqual(response.headers["Access-Control-Allow-Origin"], "https://example.com")
+
+    def test_method_not_allowed(self):
+        """Unsupported methods return a structured error."""
+        response = self.client.patch(BASE_URL)
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.get_json()["status"], 405)
+
+    def test_internal_error(self):
+        """Unexpected database failures return the API error format."""
+        from unittest.mock import patch
+        app.config["PROPAGATE_EXCEPTIONS"] = False
+        try:
+            with patch("service.routes.Account.all",
+                       side_effect=RuntimeError("database unavailable")):
+                response = self.client.get(BASE_URL)
+                self.assertEqual(response.status_code, 500)
+                self.assertEqual(response.get_json()["error"], "Internal Server Error")
+        finally:
+            app.config["PROPAGATE_EXCEPTIONS"] = None
